@@ -159,7 +159,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/08/11/NDT%20Matching%20%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0/" class="post-title-link" itemprop="url">未命名</a>
+            <a href="/2020/08/11/NDT%20Matching%20%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0/" class="post-title-link" itemprop="url">NDT Matching 算法学习</a>
         </h2>
 
         <div class="post-meta">
@@ -169,7 +169,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-08-11 15:58:25" itemprop="dateCreated datePublished" datetime="2020-08-11T15:58:25+08:00">2020-08-11</time>
+              <time title="创建时间：2020-08-11 16:04:42" itemprop="dateCreated datePublished" datetime="2020-08-11T16:04:42+08:00">2020-08-11</time>
             </span>
 
           
@@ -183,7 +183,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="NDT-Matching-算法学习"><a href="#NDT-Matching-算法学习" class="headerlink" title="NDT Matching 算法学习"></a>NDT Matching 算法学习</h1><h1 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a><strong>问题背景</strong></h1><p>  近来从事毫米波雷达的定位与建图工作，想拓展下工作思路，研究autoware公司的激光点云定位与建图。期间正好发现autoware的激光点云配准算法是NDT(Normal-Distributions Transform)，相比ICP算法，它能更快速高效地确定两个大型点云的刚性变换。这里分别介绍下2003年经典的2D NDT算法，以及autoware日本团队在2006年提出的3D NDT算法。<br>“The Normal Distributions Transform: A New Approach to Laser Scan Matching”<br>“A 3-D Scan Matching using Improved 3-D Normal Distributions Transform for Mobile Robotic Mapping”
+          <h1 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a><strong>问题背景</strong></h1><p>  近来从事毫米波雷达的定位与建图工作，想拓展下工作思路，研究autoware公司的激光点云定位与建图。期间正好发现autoware的激光点云配准算法是NDT(Normal-Distributions Transform)，相比ICP算法，它能更快速高效地确定两个大型点云的刚性变换。这里分别介绍下2003年经典的2D NDT算法，以及autoware日本团队在2006年提出的3D NDT算法。<br>“The Normal Distributions Transform: A New Approach to Laser Scan Matching”<br>“A 3-D Scan Matching using Improved 3-D Normal Distributions Transform for Mobile Robotic Mapping”
  </p>
 <h1 id="二维ND"><a href="#二维ND" class="headerlink" title="二维ND"></a>二维ND</h1><h2 id="2D-NDT数学描述"><a href="#2D-NDT数学描述" class="headerlink" title="2D NDT数学描述"></a>2D NDT数学描述</h2><p>  假设小车安装了只有一线的2D激光雷达，只能表达一个平面内是否有障碍物。把小车周围的区域划分成大小相同的单元格，我们可以用NDT(Normal Distribution Transform)对扫描的2D点云分布进行建模，用高斯分布表达每个单元格内2D点的聚集情况。若每个单元格包含3个以上的2D点，则计算该单元格内所有点Xi=1,…,n的坐标均值及方差。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/2158811/1597132135515-edb73bc3-1ea8-444b-92fa-bd2e171069d5.png#align=left&display=inline&height=59&margin=%5Bobject%20Object%5D&originHeight=59&originWidth=96&size=0&status=done&style=none&width=96"><br><img src="https://cdn.nlark.com/yuque/0/2020/png/2158811/1597132135607-29ced738-05f9-49cd-bca2-bec92edbe81b.png#align=left&display=inline&height=60&margin=%5Bobject%20Object%5D&originHeight=60&originWidth=217&size=0&status=done&style=none&width=217"><br>  不同于于栅格图occupancy grid，NDT分布用连续可微的概率密度描述细分区域网格平面内的2D点。栅格图表达的是单元格内包含障碍物的概率，NDT分布本身表示参考帧中特定网格内2D点的位置分布情况。假设下图为参考帧，左侧时栅格图表达空与不空，中间是识别到的2D激光雷达点云，右图表达每个单元格内二维正态概率分布，每个单元格大小相同，越红的地方概率值越大。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/2158811/1597132135564-e5211655-82f3-42ca-bd41-36600464a645.png#align=left&display=inline&height=205&margin=%5Bobject%20Object%5D&originHeight=179&originWidth=554&size=0&status=done&style=none&width=635"><br>  我们可以NDT分布计算当前帧新观测到的2D点坐标相对于参考帧单元格的概率（不同单元格有不同的均值和方差，均值区域表示参考帧单元格内2D点最密集的区域）。下式表示当前帧2D点x，属于参考帧中某个单元格的概率<img src="https://cdn.nlark.com/yuque/0/2020/gif/2158811/1597132138188-c18f365a-e244-4fb2-adfa-a2f84afd9052.gif#align=left&display=inline&height=18&margin=%5Bobject%20Object%5D&originHeight=18&originWidth=59&size=0&status=done&style=none&width=59"><br><img src="https://cdn.nlark.com/yuque/0/2020/png/2158811/1597132135597-4aa0b771-d0a0-4149-a342-4feb9374af6e.png#align=left&display=inline&height=64&margin=%5Bobject%20Object%5D&originHeight=64&originWidth=281&size=0&status=done&style=none&width=281"></p>
 <h2 id="如何划分网格并避免离散化的影响"><a href="#如何划分网格并避免离散化的影响" class="headerlink" title="如何划分网格并避免离散化的影响"></a>如何划分网格并避免离散化的影响</h2><p>  个人认为按照上图那样划分网格，破坏了2D点云结构，比如属于同一个物体的点云，被刻意分开到不同单元格计算了。这种离散化不利于地图地描述，也不利于后期点云配准。我们分别看看建图和定位时，如何划分网格，计算概率密度。<br>  <strong>建图时</strong>，给定参考帧laser scan的2D点云，根据点云坐标上下界以及cell size确定外侧bounding box下图蓝色边框所示。对于边框内部采用4个单元格相互重叠的，两两覆盖50%，分别计算每个子网格的点云正态分布。因此这种划分包含了4种均值和方差。下右图只是示意，实际上蓝色框图内将有多个单元格，可以认为蓝色框图内大部分的2D点会同时落入四种单元格内。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/2158811/1597132135687-5d81debd-7714-42b5-ac14-62c5bab11c20.png#align=left&display=inline&height=292&margin=%5Bobject%20Object%5D&originHeight=292&originWidth=675&size=0&status=done&style=none&width=675"><br>  <strong>定位时</strong>，计算前后两帧pose关系，给定当前帧laser scan的2D点云，根据T(待优化的参数)转换后的坐标查找落入哪个单元格内，同样当前帧每个2d点将对应四种分布。累计所有2d点对应的四种概率密度之和，通过选择合理的T，使得概率密度之和最大。</p>
